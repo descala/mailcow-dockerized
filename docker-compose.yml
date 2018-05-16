@@ -59,9 +59,10 @@ services:
             - redis
 
     clamd-mailcow:
-      image: mailcow/clamd:1.9
+      image: mailcow/clamd:1.11
       build: ./data/Dockerfiles/clamd
       restart: always
+      tty: true
       environment:
         - TZ=${TZ}
         - SKIP_CLAMD=${SKIP_CLAMD:-n}
@@ -77,7 +78,7 @@ services:
             - clamd
 
     rspamd-mailcow:
-      image: mailcow/rspamd:1.17
+      image: mailcow/rspamd:1.18
       build: ./data/Dockerfiles/rspamd
       stop_grace_period: 30s
       depends_on:
@@ -103,7 +104,7 @@ services:
             - rspamd
 
     php-fpm-mailcow:
-      image: mailcow/phpfpm:1.12
+      image: mailcow/phpfpm:1.14
       build: ./data/Dockerfiles/phpfpm
       command: "php-fpm -d date.timezone=${TZ} -d expose_php=0"
       depends_on:
@@ -113,10 +114,10 @@ services:
         - ./data/conf/rspamd/dynmaps:/dynmaps:ro
         - rspamd-sock:/rspamd-sock
         - ./data/conf/rspamd/meta_exporter:/meta_exporter:ro
-        - ./data/conf/phpfpm/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
-        - ./data/conf/phpfpm/php-fpm.d/system.conf:/usr/local/etc/php-fpm.d/system.conf
+        - ./data/conf/phpfpm/php-fpm.d/pools.conf:/usr/local/etc/php-fpm.d/z-pools.conf
         - ./data/conf/phpfpm/php-conf.d/opcache-recommended.ini:/usr/local/etc/php/conf.d/opcache-recommended.ini
         - ./data/conf/phpfpm/php-conf.d/upload.ini:/usr/local/etc/php/conf.d/upload.ini
+        - ./data/conf/phpfpm/php-conf.d/other.ini:/usr/local/etc/php/conf.d/zzz-other.ini
       environment:
         - LOG_LINES=${LOG_LINES:-9999}
         - TZ=${TZ}
@@ -143,7 +144,7 @@ services:
             - phpfpm
 
     sogo-mailcow:
-      image: mailcow/sogo:1.20
+      image: mailcow/sogo:1.22
       build: ./data/Dockerfiles/sogo
       environment:
         - DBNAME=${DBNAME}
@@ -166,7 +167,7 @@ services:
             - sogo
 
     dovecot-mailcow:
-      image: mailcow/dovecot:1.24
+      image: mailcow/dovecot:1.25
       build: ./data/Dockerfiles/dovecot
       cap_add:
         - NET_BIND_SERVICE
@@ -207,7 +208,7 @@ services:
             - dovecot
 
     postfix-mailcow:
-      image: mailcow/postfix:1.14
+      image: mailcow/postfix:1.15
       build: ./data/Dockerfiles/postfix
       volumes:
         - ./data/conf/postfix:/opt/postfix/conf
@@ -320,7 +321,7 @@ services:
             - acme
 
     netfilter-mailcow:
-      image: mailcow/netfilter:1.11
+      image: mailcow/netfilter:1.13
       build: ./data/Dockerfiles/netfilter
       stop_grace_period: 30s
       depends_on:
@@ -342,7 +343,7 @@ services:
         - /lib/modules:/lib/modules:ro
 
     watchdog-mailcow:
-      image: mailcow/watchdog:1.14
+      image: mailcow/watchdog:1.16
       # Debug
       #command: /watchdog.sh
       build: ./data/Dockerfiles/watchdog
@@ -368,7 +369,7 @@ services:
             - watchdog
 
     dockerapi-mailcow:
-      image: mailcow/dockerapi:1.9
+      image: mailcow/dockerapi:1.11
       restart: always
       build: ./data/Dockerfiles/dockerapi
       sysctls:
